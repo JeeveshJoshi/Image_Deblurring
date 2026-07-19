@@ -1,3 +1,4 @@
+import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -98,16 +99,28 @@ class DeblurDataset(torch.utils.data.Dataset):
             sharp_img = self.transform(sharp_img)
         return blurry_img, sharp_img
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train the hybrid ViT-GAN deblurring model.")
+    parser.add_argument("--blurred-dir", default="Dataset/ProcessedDataset/BlurredData",
+                         help="Directory containing blurred training images.")
+    parser.add_argument("--clean-dir", default="Dataset/ProcessedDataset/CleanData",
+                         help="Directory containing the corresponding sharp training images.")
+    parser.add_argument("--epochs", type=int, default=25)
+    parser.add_argument("--batch-size", type=int, default=20)
+    parser.add_argument("--lr", type=float, default=2e-4)
+    return parser.parse_args()
+
 def main():
+    args = parse_args()
 
     os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
     blur_sharp_dir_pairs = [
-        ("D:/Image_Deblurring/Dataset/ProcessedDataset/BlurredData","D:/Image_Deblurring/Dataset/ProcessedDataset//CleanData")
+        (args.blurred_dir, args.clean_dir)
     ]
 
-    BATCH_SIZE = 20
-    EPOCHS = 25
-    LEARNING_RATE = 2e-4
+    BATCH_SIZE = args.batch_size
+    EPOCHS = args.epochs
+    LEARNING_RATE = args.lr
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
